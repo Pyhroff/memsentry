@@ -11,6 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from memsentry.checks.dependency_manipulation import check_dependency_manipulation
+from memsentry.checks.goal_hijacking import check_goal_hijacking
 from memsentry.checks.hidden_payload import check_hidden_payload
 from memsentry.checks.instruction_injection import check_instruction_injection
 from memsentry.findings import Finding, Severity
@@ -18,6 +19,7 @@ from memsentry.memfile import MemoryFile
 
 _ALL_CHECKS = [
     check_instruction_injection,
+    check_goal_hijacking,
     check_dependency_manipulation,
     check_hidden_payload,
 ]
