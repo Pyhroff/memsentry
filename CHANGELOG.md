@@ -1,8 +1,6 @@
 # Changelog
 
-memsentry shipped as one complete tool (v1.0.0), not a version-staged
-build -- see the README for why. This file tracks real feature additions
-made after that initial ship.
+memsentry shipped as a single v1.0.0. This file tracks changes after that release.
 
 ## v1.2.0 (patch, from a 170-file scan of public agent-context files)
 

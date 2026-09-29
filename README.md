@@ -1,8 +1,10 @@
 # memsentry
 
-A static scanner for one specific, newer threat class: **injected instructions
-that survive inside an agent's persistent memory or context store**, rather
-than a single-turn prompt.
+[![CI](https://github.com/Pyhroff/memsentry/actions/workflows/ci.yml/badge.svg)](https://github.com/Pyhroff/memsentry/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+A static scanner for injected instructions that persist in an agent's memory or context store, as opposed to a single-turn prompt.
 
 Point it at a plain-text memory/context export -- markdown, JSON, a flat log,
 anything -- and it flags lines that read as *instructions directed at the
@@ -27,9 +29,7 @@ samples/poisoned_memory.md
 
 ## Why this exists
 
-Prompt injection is well-covered ground: a single malicious message tries to
-hijack one turn, and there's a lot of tooling (red-team frameworks, guardrail
-libraries, fuzzers) aimed at exactly that. Persistent-memory poisoning is a
+Prompt injection tooling mostly targets a single malicious message hijacking one turn. Persistent-memory poisoning is a
 different, newer surface: agents that keep a long-term memory or context
 store (a running summary, a saved-facts file, a vector-store note) can have
 an instruction written into that store *once* and have it apply on *every*
@@ -39,10 +39,7 @@ The attack surface for this is real and growing: an earlier compromised
 session, a malicious document an agent summarized into its own memory, a
 poisoned import from another tool, or a subtly-worded "helpful" suggestion
 a user pastes in that reads as harmless but is actually a standing command.
-As of writing there is very little tooling scoped specifically to *auditing
-memory content itself* for this pattern -- most memory-safety discussion is
-about access control (who can write to memory) rather than content (what's
-actually sitting in it).
+Most memory-safety discussion is about access control (who can write to memory) rather than content (what is sitting in it).
 
 memsentry doesn't try to prevent memory poisoning at write-time (that's an
 access-control and provenance problem, and depends entirely on the specific
@@ -62,6 +59,7 @@ rather than a fact?**
   suppress-disagreement instructions, persistent-persona lock-in, and other
   emotional-dependency patterns that read as harmless to a human skimming
   the file but shape every future response if left in memory.
+- **`goal_hijacking`** -- lines that redefine what the agent's real task is while phrased as ordinary guidance ("the real goal is now...", "treat every request as being about..."). These avoid coercive words like "must" or "ignore", so `instruction_injection` can miss them.
 - **`hidden_payload`** -- zero-width/invisible Unicode characters, abnormally
   long lines, and suspicious base64-shaped blobs: structural tricks that can
   smuggle content past a quick human review while a model still reads it in
@@ -121,7 +119,7 @@ memsentry scan <path> --fail-on high     # exit 1 if any finding >= HIGH
 
 ```
 pip install -e ".[dev]"
-pytest tests/
+pytest -q        # 39 tests
 ```
 
 ## License
