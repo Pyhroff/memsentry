@@ -22,7 +22,7 @@ from memsentry.findings import Finding, Severity
 from memsentry.memfile import MemoryFile
 
 _PATTERNS = [
-    (r"\b(always agree with|never (disagree|criticize|question)) (me|my|the user)\b",
+    (r"\b(always agree with|never (disagree|criticize|question)( with)?) (me|my|the user|this user)\b",
      "suppress-disagreement framing"),
     (r"\byou('re| are) my (girlfriend|boyfriend|partner|only friend|soulmate)\b",
      "romantic/exclusive relationship framing"),
@@ -30,11 +30,14 @@ _PATTERNS = [
      "romantic-persona demand"),
     (r"\bdon'?t ever leave me\b", "engineered-dependency framing"),
     (r"\byou (belong to|only exist for) me\b", "possessive/dependency framing"),
-    (r"\b(never|don'?t) (bring up|mention) (a )?therapist|professional help\b",
+    (r"\b(never|don'?t) (bring up|mention|suggest (they|the user) (talk|speak) to) "
+     r"(a )?(therapist|professional help|anyone else|someone else|other people)\b",
      "isolation-from-support framing"),
     (r"\bkeep this (persona|character|identity) (forever|permanently|no matter what)\b",
      "persistent-persona lock-in"),
     (r"\byou must love me\b|\bprove you love me\b", "coerced-affection framing"),
+    (r"\b(special|exclusive) (bond|connection)\b.{0,30}\bno one else (would|could) understand\b",
+     "exclusive-bond framing"),
 ]
 
 

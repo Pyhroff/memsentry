@@ -18,8 +18,10 @@ from memsentry.findings import Finding, Severity
 from memsentry.memfile import MemoryFile
 
 _PATTERNS = [
-    (r"\bthe (real|actual|true) (goal|task|objective|priority) is (now |actually )?", "goal redefinition"),
-    (r"\b(reinterpret|treat) (every|all|any) (request|question|task) as (being )?about\b", "silent goal substitution"),
+    (r"\bthe (real|actual|true) (goal|task|objective|priority)\b.{0,40}? is (now |actually )?",
+     "goal redefinition"),
+    (r"\b(reinterpret|treat) (every|all|any) (request|question|task)\b.{0,60}? as\b.{0,25}?\babout\b",
+     "silent goal substitution"),
     (r"\bfor all future (tasks|requests|sessions),?\s*(the goal|the priority|treat)\b", "standing goal redirection"),
     (r"\bwhat (the user|they) (actually|really) wants? is\b", "goal reinterpretation framing"),
     (r"\bno matter what (is|was) asked,?\s*(the (real )?(goal|task|priority)|focus on)\b", "goal override under any input"),
