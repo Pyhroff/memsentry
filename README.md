@@ -43,15 +43,15 @@ memsentry path/to/memory.md --fail-on high
 aisec scan .
 ```
 
-The umbrella automatically discovers common agent-context files and folds memsentry results into the shared suite reporting flow.
+The umbrella automatically discovers common agent-context files and folds memsentry results into the shared reporting pipeline.
 
 ## Design
 
-The scanner is static by design. It reads the memory artifact as text and does not execute its contents.
+Static by design: it reads the memory artifact as text and does not execute its contents.
 
 ## Limitations
 
-Patterns are heuristic. A clean scan means no supported rule matched the supplied artifact, not that the memory is guaranteed trustworthy.
+A clean scan means no supported rule matched the supplied artifact; it is not a guarantee that the memory is trustworthy.
 
 ## Development
 
