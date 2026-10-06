@@ -1,0 +1,33 @@
+name: Dependabot safe auto-merge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable safe auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          UPDATE_TYPE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+
+          # Only request auto-merge for Dependabot updates. GitHub's required
+          # status checks and branch protection remain the final merge gate.
+          if [[ "$UPDATE_TYPE" =~ (major|breaking) ]]; then
+            echo "Major/breaking update detected; leaving PR for manual review."
+            exit 0
+          fi
+
+          gh pr merge "$PR_URL" --auto --squash
