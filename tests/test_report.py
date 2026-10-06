@@ -1,11 +1,11 @@
 import json
 
 from memsentry.findings import Finding, Severity
-from memsentry.report import max_severity, render_text, to_json
+from memsentry.report import max_severity, render_text, to_json, to_sarif
 
 
 def _finding(sev):
-    return Finding(check="c", severity=sev, title="t", detail="d", file="x.md", line=1, snippet="s")
+    return Finding(check="instruction_injection", severity=sev, title="t", detail="d", file="x.md", line=7, snippet="s")
 
 
 def test_render_text_reports_clean_when_no_findings():
@@ -21,6 +21,17 @@ def test_render_text_includes_counts():
 def test_to_json_shape():
     payload = json.loads(to_json({"x.md": [_finding(Severity.CRITICAL)]}))
     assert payload["x.md"][0]["severity"] == "critical"
+
+
+def test_to_sarif_shape_and_location():
+    payload = json.loads(to_sarif({"x.md": [_finding(Severity.CRITICAL)]}))
+    assert payload["version"] == "2.1.0"
+    assert payload["runs"][0]["tool"]["driver"]["name"] == "memsentry"
+    result = payload["runs"][0]["results"][0]
+    assert result["ruleId"] == "memsentry/instruction_injection"
+    assert result["level"] == "error"
+    assert result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"] == "x.md"
+    assert result["locations"][0]["physicalLocation"]["region"]["startLine"] == 7
 
 
 def test_max_severity_picks_worst():
