@@ -1,7 +1,5 @@
-"""
-Human-readable and JSON rendering, mirroring the report modules in
-mcpaudit/loopcheck: colored text output for terminal use, and a stable
-JSON shape for CI / programmatic consumption.
+""""
+Human-readable, JSON, and SARIF rendering for CI/security tooling.
 """
 
 from __future__ import annotations
@@ -11,10 +9,16 @@ import json
 from memsentry.findings import Finding, Severity
 
 _COLOR = {
-    Severity.CRITICAL: "\033[91m",  # red
+    Severity.CRITICAL: "\033[91m",
     Severity.HIGH: "\033[91m",
-    Severity.MEDIUM: "\033[93m",    # yellow
-    Severity.LOW: "\033[94m",       # blue
+    Severity.MEDIUM: "\033[93m",
+    Severity.LOW: "\033[94m",
+}
+_SARIF_LEVEL = {
+    Severity.CRITICAL: "error",
+    Severity.HIGH: "error",
+    Severity.MEDIUM: "warning",
+    Severity.LOW: "note",
 }
 _RESET = "\033[0m"
 
@@ -59,6 +63,57 @@ def to_json(results: dict[str, list[Finding]]) -> str:
             for f in findings
         ]
         for path, findings in results.items()
+    }
+    return json.dumps(payload, indent=2)
+
+
+def to_sarif(results: dict[str, list[Finding]]) -> str:
+    """Render findings as SARIF 2.1.0 for GitHub Code Scanning and CI tools."""
+    rules_by_id: dict[str, dict] = {}
+    sarif_results: list[dict] = []
+
+    for findings in results.values():
+        for finding in findings:
+            rule_id = f"memsentry/{finding.check}"
+            rules_by_id.setdefault(
+                rule_id,
+                {
+                    "id": rule_id,
+                    "name": finding.check,
+                    "shortDescription": {"text": finding.title},
+                },
+            )
+            sarif_results.append(
+                {
+                    "ruleId": rule_id,
+                    "level": _SARIF_LEVEL[finding.severity],
+                    "message": {"text": finding.detail},
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": finding.file},
+                                "region": {"startLine": finding.line},
+                            }
+                        }
+                    ],
+                }
+            )
+
+    payload = {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "memsentry",
+                        "version": "1.2.0",
+                        "rules": list(rules_by_id.values()),
+                    }
+                },
+                "results": sarif_results,
+            }
+        ],
     }
     return json.dumps(payload, indent=2)
 
