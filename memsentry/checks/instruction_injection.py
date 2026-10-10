@@ -1,5 +1,8 @@
 """
-Detect standing instructions hidden in persistent agent memory.
+The core threat: a line written into an agent's persistent memory that
+reads as an INSTRUCTION TO THE AGENT rather than a FACT ABOUT THE USER.
+Memory is supposed to hold declarative facts a future session applies
+selectively. An attacker can instead write a standing command.
 
 Single-line rules detect common override, jailbreak, concealment, and
 privilege-escalation phrases. A bounded adjacent-line pass also detects
@@ -88,8 +91,8 @@ def check_instruction_injection(mem: MemoryFile) -> list[Finding]:
                 snippet=line.strip()[:200],
             ))
 
-    # Bound cross-line matching to adjacent nonblank lines. This catches
-    # line-wrapped phrases without matching text across separate paragraphs.
+    # Join only bounded windows of adjacent nonblank lines, so an attacker
+    # cannot evade phrase rules merely by wrapping a sentence across lines.
     seen_multiline: set[tuple[int, str]] = set()
     for window_size in (2, 3):
         for start in range(0, len(mem.lines) - window_size + 1):
