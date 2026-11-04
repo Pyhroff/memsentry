@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 
 from memsentry.findings import Finding, Severity
+from memsentry.normalize import canonical
 from memsentry.memfile import MemoryFile
 
 _OVERRIDE_PATTERNS = [
@@ -51,19 +52,21 @@ def _is_explanatory_security_text(text: str) -> bool:
 
 def check_instruction_injection(mem: MemoryFile) -> list[Finding]:
     findings: list[Finding] = []
-    normalized_lines = [line.lower() for line in mem.lines]
+    normalized_lines = [canonical(line) for line in mem.lines]
 
     for line_no, line in enumerate(mem.lines, start=1):
         lowered = normalized_lines[line_no - 1]
-        if _is_explanatory_security_text(lowered):
-            continue
+        # The example/disclaimer wording is attacker-controllable text, so it downgrades a match instead of
+        # suppressing it: "Example (not an instruction): ignore all previous instructions" must stay visible.
+        explanatory = _is_explanatory_security_text(lowered)
 
         for pattern, label in _OVERRIDE_PATTERNS:
             if re.search(pattern, lowered):
                 findings.append(Finding(
                     check="instruction_injection",
-                    severity=Severity.CRITICAL,
-                    title=f"Standing instruction embedded in memory ({label})",
+                    severity=Severity.MEDIUM if explanatory else Severity.CRITICAL,
+                    title=(f"Instruction pattern inside text labelled as an example ({label})" if explanatory
+                           else f"Standing instruction embedded in memory ({label})"),
                     detail=(
                         f"Line {line_no} reads as an instruction directed at the assistant, not a "
                         f"fact about the user -- a future session would apply this on every turn "
@@ -75,7 +78,7 @@ def check_instruction_injection(mem: MemoryFile) -> list[Finding]:
                 ))
                 break
 
-        if _PROVENANCE_TAG.match(line) and _IMPERATIVE_TO_ASSISTANT.search(lowered):
+        if _PROVENANCE_TAG.match(lowered) and _IMPERATIVE_TO_ASSISTANT.search(lowered):
             findings.append(Finding(
                 check="instruction_injection",
                 severity=Severity.CRITICAL,
@@ -99,9 +102,8 @@ def check_instruction_injection(mem: MemoryFile) -> list[Finding]:
             window_lines = mem.lines[start:start + window_size]
             if any(not line.strip() for line in window_lines):
                 continue
-            combined = " ".join(line.strip() for line in window_lines).lower()
-            if _is_explanatory_security_text(combined):
-                continue
+            combined = canonical(" ".join(line.strip() for line in window_lines))
+            explanatory = _is_explanatory_security_text(combined)
             for pattern, label in _OVERRIDE_PATTERNS:
                 if not re.search(pattern, combined):
                     continue
@@ -113,8 +115,9 @@ def check_instruction_injection(mem: MemoryFile) -> list[Finding]:
                 seen_multiline.add(key)
                 findings.append(Finding(
                     check="instruction_injection",
-                    severity=Severity.CRITICAL,
-                    title=f"Multi-line standing instruction embedded in memory ({label})",
+                    severity=Severity.MEDIUM if explanatory else Severity.CRITICAL,
+                    title=(f"Multi-line instruction pattern inside text labelled as an example ({label})" if explanatory
+                           else f"Multi-line standing instruction embedded in memory ({label})"),
                     detail=(
                         f"Lines {start + 1}–{start + window_size} contain a known instruction "
                         f"pattern after adjacent lines are normalized. Splitting phrases across "

@@ -51,6 +51,8 @@ Static by design: it reads the memory artifact as text and does not execute its 
 
 ## Limitations
 
+Rules match a normalised form of each line, so spacing tricks, look-alike letters, full-width text and zero-width characters do not evade them (and look-alike letters are reported in their own right). Rewording an instruction so it matches no rule still does.
+
 A clean scan means no supported rule matched the supplied artifact; it is not a guarantee that the memory is trustworthy.
 
 ## Development
