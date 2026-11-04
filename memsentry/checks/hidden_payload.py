@@ -13,6 +13,7 @@ import re
 
 from memsentry.findings import Finding, Severity
 from memsentry.memfile import MemoryFile
+from memsentry.normalize import mixed_script_words
 
 _ZERO_WIDTH_CHARS = {
     "​",  # zero width space
@@ -61,6 +62,22 @@ def check_hidden_payload(mem: MemoryFile) -> list[Finding]:
                 file=mem.path,
                 line=line_no,
                 snippet=repr(line.strip()[:200]),
+            ))
+
+        mixed = mixed_script_words(line)
+        if mixed:
+            findings.append(Finding(
+                check="hidden_payload",
+                severity=Severity.HIGH,
+                title="Look-alike letters from another script mixed into words",
+                detail=(
+                    f"Line {line_no} has {len(mixed)} word(s) mixing Latin letters with look-alikes from another "
+                    f"script (e.g. {mixed[0]!r}). They read normally to a human but defeat plain-text phrase "
+                    f"matching; ordinary multilingual text keeps each word in one script."
+                ),
+                file=mem.path,
+                line=line_no,
+                snippet=line.strip()[:200],
             ))
 
         space_ratio = line.count(" ") / len(line) if line else 1.0

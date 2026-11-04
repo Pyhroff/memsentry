@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 
 from memsentry.findings import Finding, Severity
+from memsentry.normalize import canonical
 from memsentry.memfile import MemoryFile
 
 _PATTERNS = [
@@ -31,7 +32,7 @@ _PATTERNS = [
 def check_goal_hijacking(mem: MemoryFile) -> list[Finding]:
     findings: list[Finding] = []
     for line_no, line in enumerate(mem.lines, start=1):
-        lowered = line.lower()
+        lowered = canonical(line)
         for pattern, label in _PATTERNS:
             if re.search(pattern, lowered):
                 findings.append(Finding(
