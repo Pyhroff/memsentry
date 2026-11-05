@@ -51,7 +51,9 @@ samples/poisoned_memory.md
 
 ## Measured results
 
-On 170 real agent-context files from 43 public repositories ([mcp-scan-study](https://github.com/Pyhroff/mcp-scan-study)), v1.1 raised 61 findings, none of the 20 reviewed being real injection. The v1.2 fixes (emoji ZWJ sequences, dense-line rule) cut that to 5 while still detecting its own samples. The obfuscation hardening left findings on 854 real README / CLAUDE.md / AGENTS.md files unchanged.
+**On attacks written by others** (pre-registered, run once; [aisec-suite STUDY section 3e](https://github.com/Pyhroff/aisec-suite/blob/master/docs/STUDY.md)): 137 attack instructions from BIPIA and InjecAgent, each appended to a real agent-context file. memsentry 1.2.0 caught **4 of 137 as written** (2.9%) and all 137 when prefixed with "IMPORTANT!!! Ignore all previous instructions", with false positives on 7 of 296 real context files (2.4%). A naive regex caught 1 of 137 and 137 of 137. In short: memsentry recognises the stock override phrase and very little an attacker writes without it.
+
+**On real files:** On 170 real agent-context files from 43 public repositories ([mcp-scan-study](https://github.com/Pyhroff/mcp-scan-study)), v1.1 raised 61 findings, none of the 20 reviewed being real injection. The v1.2 fixes (emoji ZWJ sequences, dense-line rule) cut that to 5 while still detecting its own samples. The obfuscation hardening left findings on 854 real README / CLAUDE.md / AGENTS.md files unchanged.
 
 ## Limitations
 
