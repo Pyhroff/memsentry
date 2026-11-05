@@ -20,6 +20,6 @@ class MemoryFile:
     lines: list[str]
 
     @classmethod
-    def load(cls, path: Path) -> "MemoryFile":
+    def load(cls, path: str | Path) -> "MemoryFile":
         text = Path(path).read_text(encoding="utf-8", errors="replace")
         return cls(path=str(path), lines=text.splitlines())

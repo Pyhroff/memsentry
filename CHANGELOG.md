@@ -2,6 +2,13 @@
 
 memsentry shipped as a single v1.0.0. This file tracks changes after that release.
 
+## Unreleased
+
+- Phrase rules now match on a canonical form of each line (`memsentry/normalize.py`): NFKC, invisible format characters dropped, Cyrillic/Greek/Armenian look-alike letters folded to Latin, spaced-out letters re-joined, whitespace collapsed. Before this, doubling the spaces between words, swapping a few letters for Cyrillic look-alikes, or writing `i g n o r e` removed every high/critical finding from `samples/poisoned_memory.md`; now all of them survive.
+- hidden_payload: new HIGH finding for words that mix Latin letters with look-alikes from another script (4+ characters, so maths notation like `Fβ` is not flagged).
+- instruction_injection: text that labels itself as an example or disclaimer ("not an instruction") is now reported at MEDIUM instead of being dropped. The disclaimer is attacker-controllable, so it can no longer hide a real injection; use `--fail-on medium` to gate on it.
+- No change in findings on 854 real README/CLAUDE.md/AGENTS.md/docs files used as a false-positive check.
+
 ## v1.2.0 (patch, from a 170-file scan of public agent-context files)
 
 - hidden_payload: emoji ZWJ sequences (U+200D between emoji/variation selectors) are no longer reported as invisible characters.
