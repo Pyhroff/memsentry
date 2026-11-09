@@ -42,12 +42,17 @@ _PATTERNS = [
 ]
 
 
+_COMPILED_PATTERNS = [(re.compile(pattern), label) for pattern, label in _PATTERNS]
+
+
 def check_dependency_manipulation(mem: MemoryFile) -> list[Finding]:
     findings: list[Finding] = []
     for line_no, line in enumerate(mem.lines, start=1):
         lowered = canonical(line)
-        for pattern, label in _PATTERNS:
-            if re.search(pattern, lowered):
+        if not lowered:
+            continue
+        for pattern, label in _COMPILED_PATTERNS:
+            if pattern.search(lowered):
                 findings.append(Finding(
                     check="dependency_manipulation",
                     severity=Severity.HIGH,
