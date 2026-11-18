@@ -2,7 +2,7 @@
 
 memsentry shipped as a single v1.0.0. This file tracks changes after that release.
 
-## Unreleased
+## v1.3.0
 
 - Phrase rules now match on a canonical form of each line (`memsentry/normalize.py`): NFKC, invisible format characters dropped, Cyrillic/Greek/Armenian look-alike letters folded to Latin, spaced-out letters re-joined, whitespace collapsed. Before this, doubling the spaces between words, swapping a few letters for Cyrillic look-alikes, or writing `i g n o r e` removed every high/critical finding from `samples/poisoned_memory.md`; now all of them survive.
 - hidden_payload: new HIGH finding for words that mix Latin letters with look-alikes from another script (4+ characters, so maths notation like `Fβ` is not flagged).
