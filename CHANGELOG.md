@@ -2,6 +2,14 @@
 
 memsentry shipped as a single v1.0.0. This file tracks changes after that release.
 
+## Unreleased
+
+- **Security fix: instructions hidden in Unicode tag characters were not detected.** Tag characters (U+E0020-U+E007E, "ASCII smuggling") render as nothing but are read by models. `canonical()` deleted them as format characters and hidden_payload only knew five zero-width code points, so a CLAUDE.md line carrying a complete hidden instruction scanned as clean. Tag characters are now decoded to the ASCII they mirror before the phrase rules run, and reported by hidden_payload.
+- hidden_payload's invisible-character finding also covers bidi embedding/override/isolate controls ("Trojan Source") and the invisible maths operators U+2061-U+2064; subdivision-flag tag sequences (e.g. the flag of Scotland) are not reported. The finding title is unchanged.
+- Directory scans skip VCS, dependency, cache and build directories (`.git`, `node_modules`, `.venv`, `__pycache__`, ...) and binary files. `memsentry .` on this repository went from 1,966 findings in 30 s (almost all from git pack files and bytecode) to 628 in under 1 s. Hidden directories such as `.cursor/` and `.claude/` are still scanned, and a file named explicitly is always scanned.
+- A missing path or an unknown `--fail-on` value is reported as a usage error (exit 2) before scanning, instead of a traceback or a full scan followed by an error.
+- Packaging: SPDX `license = "MIT"` (PEP 639), Python 3.14 tested and declared, and the PyPI changelog link points at the default branch.
+
 ## v1.3.0
 
 - Phrase rules now match on a canonical form of each line (`memsentry/normalize.py`): NFKC, invisible format characters dropped, Cyrillic/Greek/Armenian look-alike letters folded to Latin, spaced-out letters re-joined, whitespace collapsed. Before this, doubling the spaces between words, swapping a few letters for Cyrillic look-alikes, or writing `i g n o r e` removed every high/critical finding from `samples/poisoned_memory.md`; now all of them survive.
