@@ -2,7 +2,7 @@
 
 memsentry shipped as a single v1.0.0. This file tracks changes after that release.
 
-## Unreleased
+## v1.3.1
 
 - **Security fix: instructions hidden in Unicode tag characters were not detected.** Tag characters (U+E0020-U+E007E, "ASCII smuggling") render as nothing but are read by models. `canonical()` deleted them as format characters and hidden_payload only knew five zero-width code points, so a CLAUDE.md line carrying a complete hidden instruction scanned as clean. Tag characters are now decoded to the ASCII they mirror before the phrase rules run, and reported by hidden_payload.
 - hidden_payload's invisible-character finding also covers bidi embedding/override/isolate controls ("Trojan Source") and the invisible maths operators U+2061-U+2064; subdivision-flag tag sequences (e.g. the flag of Scotland) are not reported. The finding title is unchanged.
